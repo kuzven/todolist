@@ -1,9 +1,11 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, BotUser
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    model = User
-    list_display = ('telegram_id', 'telegram_username', 'first_name', 'last_name', 'is_active', 'is_staff')
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'is_staff', 'is_superuser')
+
+@admin.register(BotUser)
+class BotUserAdmin(admin.ModelAdmin):
+    list_display = ('telegram_id', 'telegram_username', 'first_name', 'last_name')
     search_fields = ('telegram_id', 'telegram_username', 'first_name', 'last_name')
