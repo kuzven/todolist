@@ -11,14 +11,14 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 from bot.bot import dp, bot
-from bot.handlers import start, tasks, addtask, addcategory
-
+from bot.handlers import start, tasks, addtask, addcategory, categories
 
 # Регистрация обработчиков
 start.register_handlers(dp)
 tasks.register_handlers(dp)
 addtask.register_handlers(dp)
 addcategory.register_handlers(dp)
+categories.register_handlers(dp)
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
