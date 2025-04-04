@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from datetime import datetime
 from bot.utils.api import get_categories, create_task
 
 
@@ -77,9 +78,18 @@ async def process_description(message: types.Message, state: FSMContext):
 
 async def process_due_date(message: types.Message, state: FSMContext):
     try:
+        # Проверяем, корректен ли формат даты
+        due_date = datetime.strptime(message.text.strip(), "%Y-%m-%d %H:%M")
+        if due_date < datetime.now():
+            # Если дата в прошлом, возвращаем сообщение об ошибке
+            await message.answer(
+                "Введённые дата и время уже истекли. Введите корректные дату и время выполнения задачи в формате 'YYYY-MM-DD HH:MM':"
+            )
+            return
+        
+        # Сохраняем дату дедлайна и создаём задачу
         user_data = await state.get_data()
         print(f"[DEBUG] Данные пользователя для создания задачи: {user_data}")
-
         response = await create_task(
             user_id=message.from_user.id,
             title=user_data['title'],
@@ -94,9 +104,14 @@ async def process_due_date(message: types.Message, state: FSMContext):
             await message.answer("Ошибка при добавлении задачи.")
         
         await state.clear()
+
+    except ValueError:
+        await message.answer(
+            "Некорректный формат даты. Введите корректные дату и время выполнения задачи в формате 'YYYY-MM-DD HH:MM':"
+        )
     except Exception as e:
         print(f"[ERROR] Ошибка при добавлении задачи: {e}")
-        await message.answer("Ошибка при добавлении задачи. Попробуйте позже.")
+        await message.answer("Произошла ошибка. Попробуйте позже.")
 
 def register_handlers(dp: Dispatcher):
     dp.message.register(add_task_command, Command("addtask"))
