@@ -8,10 +8,11 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи Django"
 
 class BotUser(models.Model):
-    telegram_id = models.BigIntegerField(unique=True, null=False, verbose_name="Telegram ID")
+    telegram_id = models.BigIntegerField(primary_key=True, verbose_name="Telegram ID")
     telegram_username = models.CharField(max_length=255, blank=True, null=True, verbose_name="Telegram Username")
     first_name = models.CharField(max_length=255, verbose_name="First Name")
     last_name = models.CharField(max_length=255, verbose_name="Last Name")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Время регистрации")
 
     class Meta:
         verbose_name = "Пользователь бота"

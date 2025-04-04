@@ -23,7 +23,7 @@ class Task(models.Model):
     user = models.ForeignKey(BotUser, on_delete=models.CASCADE, related_name="tasks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     due_date = models.DateTimeField(verbose_name="Срок выполнения")
-    is_completed = models.BooleanField(default=False, verbose_name="Завершена ли задача")
+    is_completed = models.BooleanField(default=False, verbose_name="Задача завершена")
 
     class Meta:
         verbose_name = "Задача"

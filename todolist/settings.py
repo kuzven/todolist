@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-slz0c6kq!8@2f%fc^_#(d@chw11!2yt#ye052uq71$z1g)mu96
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.120']
+ALLOWED_HOSTS = ['192.168.0.120', '127.0.0.1']
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'users',
     'tasks',
+    'bot',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +126,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Настройки REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+}
