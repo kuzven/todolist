@@ -1,11 +1,15 @@
+from datetime import datetime
+import pytz
 from aiogram import types, Dispatcher
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from datetime import datetime
 from bot.utils.api import get_categories, create_task
+from bot.tasks import notify_user
 
+# Указываем часовой пояс, используемый в Django
+DJANGO_TIME_ZONE = pytz.timezone("America/Adak")
 
 # Состояния для создания задачи
 class AddTaskState(StatesGroup):
@@ -78,9 +82,15 @@ async def process_description(message: types.Message, state: FSMContext):
 
 async def process_due_date(message: types.Message, state: FSMContext):
     try:
+        # Получаем текущую дату и время в зоне Django
+        current_time = datetime.now(DJANGO_TIME_ZONE)
+        print(f"[DEBUG] Текущее время (в зоне {DJANGO_TIME_ZONE}): {current_time}")
+
         # Проверяем, корректен ли формат даты
         due_date = datetime.strptime(message.text.strip(), "%Y-%m-%d %H:%M")
-        if due_date < datetime.now():
+        due_date = DJANGO_TIME_ZONE.localize(due_date)  # Приводим дедлайн к часовому поясу Django
+
+        if due_date < current_time:
             # Если дата в прошлом, возвращаем сообщение об ошибке
             await message.answer(
                 "Введённые дата и время уже истекли. Введите корректные дату и время выполнения задачи в формате 'YYYY-MM-DD HH:MM':"
@@ -95,14 +105,19 @@ async def process_due_date(message: types.Message, state: FSMContext):
             title=user_data['title'],
             description=user_data['description'],
             category=user_data['category'],
-            due_date=message.text
+            due_date=due_date.isoformat() # Сохраняем дату в ISO-формате
         )
 
         if response:
+            # Запускаем задачу Celery для уведомления при дедлайне
+            delay = (due_date - current_time).total_seconds()
+            notify_user.apply_async(args=[message.from_user.id, user_data['title']], countdown=delay)
+            print(f"[INFO] Задача для уведомления Celery создана. Задержка: {delay} секунд.")
+
             await message.answer(f"Задача '{user_data['title']}' добавлена с дедлайном {message.text}.")
         else:
             await message.answer("Ошибка при добавлении задачи.")
-        
+
         await state.clear()
 
     except ValueError:
