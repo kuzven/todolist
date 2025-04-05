@@ -28,7 +28,7 @@ async def add_task_command(message: types.Message, state: FSMContext):
             return
 
         # Формируем клавиатуру для выбора категории
-        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[])
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, keyboard=[])
         for category in categories:
             keyboard.keyboard.append([KeyboardButton(text=category["name"])])
 
@@ -111,12 +111,13 @@ async def process_due_date(message: types.Message, state: FSMContext):
         if response:
             # Запускаем задачу Celery для уведомления при дедлайне
             delay = (due_date - current_time).total_seconds()
-            notify_user.apply_async(args=[message.from_user.id, user_data['title']], countdown=delay)
+            notify_user.apply_async(args=[message.from_user.id, user_data['title'], response["id"]], countdown=delay)
             print(f"[INFO] Задача для уведомления Celery создана. Задержка: {delay} секунд.")
 
             await message.answer(f"Задача '{user_data['title']}' добавлена с дедлайном {message.text}.")
         else:
             await message.answer("Ошибка при добавлении задачи.")
+            print("[ERROR] create_task вернул None. Проверь API.")
 
         await state.clear()
 

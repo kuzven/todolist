@@ -1,4 +1,3 @@
-import aiohttp
 from datetime import datetime
 from aiogram import types, Dispatcher
 from aiogram.filters import Command
