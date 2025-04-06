@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import ast
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv()) # Загрузка переменных из .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-slz0c6kq!8@2f%fc^_#(d@chw11!2yt#ye052uq71$z1g)mu96'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = ast.literal_eval(os.getenv('DEBUG'))
 
-ALLOWED_HOSTS = ['192.168.0.120', '127.0.0.1']
+ALLOWED_HOSTS = ast.literal_eval(os.getenv('ALLOWED_HOSTS'))
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -78,12 +83,24 @@ WSGI_APPLICATION = 'todolist.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('USE_POSTGRES') == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('PG_DATABASE'),
+            'USER': os.getenv('PG_USER'),
+            'PASSWORD': os.getenv('PG_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -136,3 +153,9 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+
+# Настройки Celery
+CELERY_BROKER_URL = (
+    f"redis://{os.getenv('REDIS_HOST', 'localhost')}:"
+    f"{os.getenv('REDIS_PORT', '6379')}/0"
+)
