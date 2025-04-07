@@ -1,3 +1,4 @@
+GNU nano 7.2                                                                      Dockerfile                                                                                
 FROM python:3.12-slim
 
 # Установка системных зависимостей
@@ -8,6 +9,7 @@ RUN apt-get update && apt-get install -y \
 
 # Установка зависимостей Python
 WORKDIR /app
+ENV PYTHONPATH=/app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -15,4 +17,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Команда запуска
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 & python -m bot & celery -A my_celery worker --loglevel=info --pool=solo"]
+CMD ["sh", "-c", "sleep 30 && python manage.py runserver 0.0.0.0:8000"]
