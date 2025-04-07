@@ -1,4 +1,3 @@
-GNU nano 7.2                                                                      Dockerfile                                                                                
 FROM python:3.12-slim
 
 # Установка системных зависимостей
